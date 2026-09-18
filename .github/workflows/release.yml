@@ -1,0 +1,101 @@
+name: Release
+run-name: Release ${{ inputs.version }} from ${{ github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Reviewed version in package.json, for example 0.1.0 or 0.2.0-rc.1
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+# Serialize all release lines so an older version cannot race the latest npm tag.
+concurrency:
+  group: publish-jev-bot
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Release check (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            node: "22.0.0"
+          - os: macos-15
+            node: "24.21.0"
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+        with:
+          deno-version: "2.9.6"
+      - name: Check release branch and reviewed version
+        run: node scripts/release.mjs check "$RELEASE_VERSION"
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run package:check
+      - run: npm run jsr:check
+
+  publish:
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: publish
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24.21.0"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+        with:
+          deno-version: "2.9.6"
+      - name: Check release branch and reviewed version
+        run: node scripts/release.mjs check "$RELEASE_VERSION"
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build and verify both packages from this commit
+        run: npm run package:check
+      - run: npm run jsr:check
+      - name: Publish npm, JSR, then GitHub release
+        run: node scripts/release.mjs publish "$RELEASE_VERSION"
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          GH_TOKEN: ${{ github.token }}
+      - name: Keep packages and verification receipt
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .release/npm/*.tgz
+            .release/release.json
+          if-no-files-found: ignore
+          include-hidden-files: true
+          retention-days: 30

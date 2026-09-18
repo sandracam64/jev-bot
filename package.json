@@ -1,0 +1,77 @@
+{
+  "name": "@compootor/jev-bot",
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build",
+    "test": "node --import tsx --test test/*.test.ts",
+    "start": "node dist/cli.js",
+    "smoke:live": "node --import tsx scripts/live-smoke.ts",
+    "pretypecheck": "node scripts/build.mjs --metadata-only",
+    "prepack": "npm run build",
+    "package:check": "node scripts/package-check.mjs",
+    "release:prepare": "node scripts/release.mjs prepare",
+    "release:check": "node scripts/release.mjs check",
+    "jsr:check": "deno publish --dry-run --allow-dirty --config .release/jsr/jsr.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@typesafe-ai/sdk": "0.6.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.17.0",
+    "tsx": "4.20.3",
+    "typescript": "5.9.2"
+  },
+  "description": "Native Mac computer use through persistent JavaScript, MCP, and TypeSafe Jev.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stoopid-computers/jev-bot.git"
+  },
+  "homepage": "https://github.com/stoopid-computers/jev-bot#readme",
+  "bugs": {
+    "url": "https://github.com/stoopid-computers/jev-bot/issues"
+  },
+  "keywords": [
+    "mcp",
+    "macos",
+    "computer-use",
+    "jev",
+    "typesafe"
+  ],
+  "bin": {
+    "jev-bot": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli.d.ts",
+      "import": "./dist/cli.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}

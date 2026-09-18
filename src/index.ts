@@ -1,0 +1,23 @@
+/**
+ * Persistent computer-use sessions for Node.js and native macOS apps.
+ * Importing this module starts no server, native driver, or model request.
+ * @module
+ */
+export { createSession } from "./runtime.js";
+export type { ComputerSession, SessionOptions } from "./runtime.js";
+export { createServer } from "./server.js";
+export type { ReplRuntimePort } from "./server.js";
+export type {
+  Candidate,
+  Choose,
+  Decision,
+  Driver,
+  Element,
+  Expectation,
+  JsonObject,
+  NativeAction,
+  Observation,
+  RunRequest,
+  RunResult,
+  Target,
+} from "./types.js";
