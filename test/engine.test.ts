@@ -109,7 +109,7 @@ function answer(
 const chooseFirst: Choose = async (_goal, _observation, candidates) =>
   answer(candidates);
 
-test("matches a unique exact postcondition before any provider call or mutation", async () => {
+void test("matches a unique exact postcondition before any provider call or mutation", async () => {
   const driver = new FakeDriver();
   const engine = new DesktopEngine(driver, async () => {
     throw new Error("must not call provider");
@@ -122,7 +122,7 @@ test("matches a unique exact postcondition before any provider call or mutation"
   assert.equal(driver.executed.length, 0);
 });
 
-test("empty and ambiguous completion conditions cannot report success", async () => {
+void test("empty and ambiguous completion conditions cannot report success", async () => {
   const driver = new FakeDriver([
     observation([button, { ...button, token: "other", index: 3 }]),
   ]);
@@ -145,7 +145,7 @@ test("empty and ambiguous completion conditions cannot report success", async ()
   assert.equal(driver.executed.length, 0);
 });
 
-test("model done always hands verification to the host without a matching condition", async () => {
+void test("model done always hands verification to the host without a matching condition", async () => {
   const driver = new FakeDriver();
   const engine = new DesktopEngine(driver, async (_goal, _state, candidates) =>
     answer(candidates, "done"),
@@ -156,7 +156,7 @@ test("model done always hands verification to the host without a matching condit
   assert.equal(driver.executed.length, 0);
 });
 
-test("the last budget action gets a fresh observation and exact completion check", async () => {
+void test("the last budget action gets a fresh observation and exact completion check", async () => {
   const final = observation([{ ...field, value: "Complete" }], {
     snapshotId: "snapshot-2",
   });
@@ -178,7 +178,7 @@ test("the last budget action gets a fresh observation and exact completion check
   assert.equal(result.history[0]?.outcome, "executed");
 });
 
-test("unknown execution is observed once and never retried", async (t) => {
+void test("unknown execution is observed once and never retried", async (t) => {
   for (const failure of ["throw", "unknown", "stale"] as const) {
     await t.test(failure, async () => {
       const driver = new FakeDriver([
@@ -203,7 +203,7 @@ test("unknown execution is observed once and never retried", async (t) => {
   }
 });
 
-test("independent postcondition can resolve a lost execution response", async () => {
+void test("independent postcondition can resolve a lost execution response", async () => {
   const driver = new FakeDriver([
     observation(),
     observation([{ ...field, value: "Saved" }]),
@@ -220,7 +220,7 @@ test("independent postcondition can resolve a lost execution response", async ()
   assert.equal(driver.executed.length, 1);
 });
 
-test("failed postobservation preserves the attempted action and stops", async () => {
+void test("failed postobservation preserves the attempted action and stops", async () => {
   const driver = new FakeDriver([observation(), new Error("read failed")]);
   const result = await new DesktopEngine(driver, chooseFirst).run(request);
   assert.equal(result.status, "unknown");
@@ -230,7 +230,7 @@ test("failed postobservation preserves the attempted action and stops", async ()
   assert.equal(result.observation, undefined);
 });
 
-test("unchanged semantic state stops before repeating a confirmed action", async () => {
+void test("unchanged semantic state stops before repeating a confirmed action", async () => {
   const driver = new FakeDriver([
     observation(),
     observation(
@@ -253,7 +253,7 @@ test("unchanged semantic state stops before repeating a confirmed action", async
   assert.equal(driver.executed.length, 1);
 });
 
-test("reobservation consumes the budget and the final read can verify completion", async () => {
+void test("reobservation consumes the budget and the final read can verify completion", async () => {
   const driver = new FakeDriver([
     observation(),
     observation(),
@@ -279,7 +279,7 @@ test("reobservation consumes the budget and the final read can verify completion
   assert.equal(exhausted.history.length, 2);
 });
 
-test("only advertised enabled native actions and caller-supplied text become candidates", async () => {
+void test("only advertised enabled native actions and caller-supplied text become candidates", async () => {
   const elements: Element[] = [
     button,
     field,
@@ -338,7 +338,7 @@ test("only advertised enabled native actions and caller-supplied text become can
   });
 });
 
-test("keys are scoped to the supplied allowlist and invalid strings fail before native calls", async () => {
+void test("keys are scoped to the supplied allowlist and invalid strings fail before native calls", async () => {
   const driver = new FakeDriver();
   let offered: readonly Candidate[] = [];
   const engine = new DesktopEngine(
@@ -363,7 +363,7 @@ test("keys are scoped to the supplied allowlist and invalid strings fail before 
   assert.equal(driver.reads, readsBefore);
 });
 
-test("missing or repeated actionable tokens return to the host", async (t) => {
+void test("missing or repeated actionable tokens return to the host", async (t) => {
   for (const elements of [
     [{ ...button, token: undefined }],
     [button, { ...button, index: 2 }],
@@ -382,7 +382,7 @@ test("missing or repeated actionable tokens return to the host", async (t) => {
   }
 });
 
-test("candidate overflow hands off instead of truncating supported choices", async () => {
+void test("candidate overflow hands off instead of truncating supported choices", async () => {
   const elements = Array.from({ length: 253 }, (_, index) => ({
     ...button,
     index,
@@ -402,7 +402,7 @@ test("candidate overflow hands off instead of truncating supported choices", asy
   }).run(request);
 });
 
-test("degraded or empty accessibility trees cannot verify or execute", async (t) => {
+void test("degraded or empty accessibility trees cannot verify or execute", async (t) => {
   for (const state of [
     observation([button], { degraded: true }),
     observation([]),
@@ -418,7 +418,7 @@ test("degraded or empty accessibility trees cannot verify or execute", async (t)
   }
 });
 
-test("partial accessibility projections allow grounded actions and positive observed predicates", async () => {
+void test("partial accessibility projections allow grounded actions and positive observed predicates", async () => {
   const driver = new FakeDriver([
     observation([button, field], { complete: false }),
     observation([{ ...field, value: "Saved" }], {
@@ -436,7 +436,7 @@ test("partial accessibility projections allow grounded actions and positive obse
   assert.match(result.reason, /within the returned window elements/);
 });
 
-test("an absent predicate on a partial projection never counts as verification", async () => {
+void test("an absent predicate on a partial projection never counts as verification", async () => {
   const driver = new FakeDriver([observation([button], { complete: false })]);
   const result = await new DesktopEngine(
     driver,
@@ -448,7 +448,7 @@ test("an absent predicate on a partial projection never counts as verification",
   assert.equal(result.status, "handoff");
 });
 
-test("different values cannot disambiguate two elements with the same completion selector", async () => {
+void test("different values cannot disambiguate two elements with the same completion selector", async () => {
   const driver = new FakeDriver([
     observation(
       [
@@ -467,7 +467,7 @@ test("different values cannot disambiguate two elements with the same completion
   assert.equal(driver.executed.length, 0);
 });
 
-test("invalid decisions cannot reach native execution", async (t) => {
+void test("invalid decisions cannot reach native execution", async (t) => {
   const mutations: Record<string, (value: Decision) => Decision> = {
     "unknown choice": (value) => ({ ...value, selectedId: "invented" }),
     "NaN confidence": (value) => ({ ...value, confidence: NaN }),
@@ -518,7 +518,7 @@ test("invalid decisions cannot reach native execution", async (t) => {
   }
 });
 
-test("snapshots, candidates, and provider history are immutable owned copies", async () => {
+void test("snapshots, candidates, and provider history are immutable owned copies", async () => {
   const driver = new FakeDriver();
   const engine = new DesktopEngine(
     driver,
@@ -537,7 +537,7 @@ test("snapshots, candidates, and provider history are immutable owned copies", a
   assert.ok(Object.isFrozen(result.history));
 });
 
-test("cancellation before execution does not mutate", async (t) => {
+void test("cancellation before execution does not mutate", async (t) => {
   await t.test("already cancelled", async () => {
     const driver = new FakeDriver();
     const signal = AbortSignal.abort();
@@ -564,7 +564,7 @@ test("cancellation before execution does not mutate", async (t) => {
   });
 });
 
-test("cancellation during native input is unknown and gets a fresh read without retry", async () => {
+void test("cancellation during native input is unknown and gets a fresh read without retry", async () => {
   const controller = new AbortController();
   const driver = new FakeDriver([
     observation(),
@@ -583,7 +583,7 @@ test("cancellation during native input is unknown and gets a fresh read without 
   assert.equal(driver.reads, 2);
 });
 
-test("a pending run denies overlapping runs, observations, window lists, and close", async () => {
+void test("a pending run denies overlapping runs, observations, window lists, and close", async () => {
   let release!: (decision: Decision) => void;
   let entered!: () => void;
   let choices!: readonly Candidate[];
@@ -624,7 +624,7 @@ test("a pending run denies overlapping runs, observations, window lists, and clo
   await assert.rejects(engine.observe(target), /closed/);
 });
 
-test("a pending standalone observation also owns the native session", async () => {
+void test("a pending standalone observation also owns the native session", async () => {
   let release!: (state: Observation) => void;
   const driver = new FakeDriver();
   driver.observeHook = () =>
@@ -639,7 +639,7 @@ test("a pending standalone observation also owns the native session", async () =
   await pending;
 });
 
-test("invalid bounds and wrong-window observations never execute", async () => {
+void test("invalid bounds and wrong-window observations never execute", async () => {
   const driver = new FakeDriver([
     observation([], { target: { pid: 42, windowId: 8 } }),
   ]);
@@ -651,7 +651,7 @@ test("invalid bounds and wrong-window observations never execute", async () => {
   assert.equal(driver.executed.length, 0);
 });
 
-test("semantic operations restrict the model to the requested action kinds", async () => {
+void test("semantic operations restrict the model to the requested action kinds", async () => {
   const driver = new FakeDriver();
   const engine = new DesktopEngine(
     driver,
@@ -676,7 +676,7 @@ test("semantic operations restrict the model to the requested action kinds", asy
   assert.equal(driver.executed.length, 0);
 });
 
-test("semantic replacement uses set_value and never substitutes insertion", async () => {
+void test("semantic replacement uses set_value and never substitutes insertion", async () => {
   const driver = new FakeDriver([
     observation([{ ...field, value: "Existing text" }]),
     observation([{ ...field, value: "Replacement" }], {
@@ -714,7 +714,7 @@ test("semantic replacement uses set_value and never substitutes insertion", asyn
   assert.equal(driver.executed[0]?.kind, "set_value");
 });
 
-test("general text runs describe insertion and offer no implicit replacement", async () => {
+void test("general text runs describe insertion and offer no implicit replacement", async () => {
   const driver = new FakeDriver();
   await new DesktopEngine(driver, async (_goal, _state, candidates) => {
     const insertion = candidates.find(
@@ -732,7 +732,7 @@ test("general text runs describe insertion and offer no implicit replacement", a
   }).run({ ...request, text: "Additional text" });
 });
 
-test("direct native execution is single-use and preserves uncertain delivery", async () => {
+void test("direct native execution is single-use and preserves uncertain delivery", async () => {
   const driver = new FakeDriver();
   const engine = new DesktopEngine(driver, chooseFirst);
   const action: NativeAction = {
@@ -759,7 +759,7 @@ test("direct native execution is single-use and preserves uncertain delivery", a
   assert.equal(driver.executed.length, 2);
 });
 
-test("direct replacement accepts empty strings without rewriting insertion semantics", async () => {
+void test("direct replacement accepts empty strings without rewriting insertion semantics", async () => {
   const driver = new FakeDriver();
   const engine = new DesktopEngine(driver, chooseFirst);
   await engine.execute({
@@ -790,7 +790,7 @@ test("direct replacement accepts empty strings without rewriting insertion seman
   assert.equal(driver.executed.length, 2);
 });
 
-test("optional app and screenshot methods explain unavailable capabilities", async () => {
+void test("optional app and screenshot methods explain unavailable capabilities", async () => {
   const driver = new FakeDriver();
   const engine = new DesktopEngine(driver, chooseFirst);
   await assert.rejects(engine.listApps(), /does not support listing apps/);
@@ -814,7 +814,7 @@ test("optional app and screenshot methods explain unavailable capabilities", asy
   });
 });
 
-test("shutdown stops new calls, waits for pending native input, and closes once", async () => {
+void test("shutdown stops new calls, waits for pending native input, and closes once", async () => {
   let release!: (receipt: JsonObject) => void;
   const driver = new FakeDriver();
   driver.executeHook = () =>
@@ -845,7 +845,7 @@ test("shutdown stops new calls, waits for pending native input, and closes once"
   await assert.rejects(engine.observe(target), /closed/);
 });
 
-test("shutdown drains a failed operation without inheriting its rejection", async () => {
+void test("shutdown drains a failed operation without inheriting its rejection", async () => {
   let fail!: (error: Error) => void;
   const driver = new FakeDriver();
   driver.observeHook = () =>
@@ -862,7 +862,7 @@ test("shutdown drains a failed operation without inheriting its rejection", asyn
   assert.equal(driver.closeCalls, 1);
 });
 
-test("shutdown and close share a single failed driver close without retrying", async () => {
+void test("shutdown and close share a single failed driver close without retrying", async () => {
   const driver = new FakeDriver();
   driver.close = async () => {
     driver.closeCalls++;

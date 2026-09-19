@@ -17,7 +17,13 @@
     "package:check": "node scripts/package-check.mjs",
     "release:prepare": "node scripts/release.mjs prepare",
     "release:check": "node scripts/release.mjs check",
-    "jsr:check": "deno publish --dry-run --allow-dirty --config .release/jsr/jsr.json"
+    "jsr:check": "deno publish --dry-run --allow-dirty --config .release/jsr/jsr.json",
+    "prepare": "effect-tsgo patch --typescript --oxlint",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check .",
+    "lint": "oxlint --type-aware --deny-warnings .",
+    "lint:fix": "oxlint --type-aware --deny-warnings --fix .",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
@@ -27,9 +33,16 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@effect/tsgo": "0.45.0",
+    "@total-typescript/ts-reset": "0.6.1",
     "@types/node": "22.17.0",
+    "oxfmt": "0.68.0",
+    "oxlint": "1.82.0",
+    "oxlint-tsgolint": "7.0.2001",
+    "tsdown": "0.23.0",
     "tsx": "4.20.3",
-    "typescript": "5.9.2"
+    "typescript": "7.0.2",
+    "typescript-api": "npm:typescript@5.9.2"
   },
   "description": "Native Mac computer use through persistent JavaScript, MCP, and TypeSafe Jev.",
   "license": "MIT",

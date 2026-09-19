@@ -10,12 +10,13 @@ const evaluation = new AsyncLocalStorage<number>();
 let sequence = 0;
 const pending = new Map<
   number,
-  { resolve(value: any): void; reject(error: Error): void }
+  { resolve(value: unknown): void; reject(error: Error): void }
 >();
-function call(method: string, args: unknown[] = []): Promise<any> {
+function call<T = unknown>(method: string, args: unknown[] = []): Promise<T> {
   const id = ++sequence;
-  return new Promise((resolve, reject) => {
-    pending.set(id, { resolve, reject });
+  return new Promise<T>((resolve, reject) => {
+    // Both ends are owned by this package; the parent dispatch defines each result.
+    pending.set(id, { resolve: (value) => resolve(value as T), reject });
     port.postMessage({
       type: "call",
       id,
@@ -29,9 +30,12 @@ function target(id: string) {
   return Object.freeze({
     getAXState: (options?: unknown) => call("getAXState", [id, options]),
     getScreenshot: async (options?: unknown) =>
-      new Uint8Array(await call("getScreenshot", [id, options])),
+      new Uint8Array(await call<Uint8Array>("getScreenshot", [id, options])),
     getAXStateAndScreenshot: async (options?: unknown) => {
-      const result = await call("getAXStateAndScreenshot", [id, options]);
+      const result = await call<{ state: string; screenshot: Uint8Array }>(
+        "getAXStateAndScreenshot",
+        [id, options],
+      );
       return { ...result, screenshot: new Uint8Array(result.screenshot) };
     },
     click: (element: number | string) => call("click", [id, element]),
@@ -71,9 +75,10 @@ Object.assign(repl.context, {
   cua: Object.freeze({
     getState: (options?: unknown) => call("getState", [options]),
     listApps: (options?: unknown) => call("listApps", [options]),
-    getApp: async (name: string) => target(await call("getApp", [name])),
+    getApp: async (name: string) =>
+      target(await call<string>("getApp", [name])),
     getWindow: async (pid: number, windowId: number) =>
-      target(await call("getWindow", [pid, windowId])),
+      target(await call<string>("getWindow", [pid, windowId])),
   }),
   nodeRepl: Object.freeze({
     write: (value: unknown) =>

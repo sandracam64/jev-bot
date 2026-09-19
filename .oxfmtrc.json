@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "all",
+  "proseWrap": "preserve",
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "dist/**",
+    ".release/**",
+    ".local/**",
+    "src/version.ts",
+    "package-lock.json",
+    "NOTICE",
+    "LICENSE"
+  ]
+}

@@ -4,7 +4,7 @@ import { createSession } from "../dist/index.js";
 import { parseCliArguments } from "../src/cli-options.js";
 import type { Driver } from "../src/types.js";
 
-test("public sessions preserve bindings and own one connection shutdown", async () => {
+void test("public sessions preserve bindings and own one connection shutdown", async () => {
   let nativeReads = 0;
   let closes = 0;
   const driver: Driver = {
@@ -58,7 +58,7 @@ test("public sessions preserve bindings and own one connection shutdown", async 
   await assert.rejects(session.reset(), /Session is closed/);
 });
 
-test("CLI accepts an explicit environment file without treating its path as a command", () => {
+void test("CLI accepts an explicit environment file without treating its path as a command", () => {
   assert.deepEqual(parseCliArguments([]), { command: "stdio" });
   assert.deepEqual(
     parseCliArguments(["--env-file", "/config/.env", "doctor"]),

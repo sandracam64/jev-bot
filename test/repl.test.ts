@@ -97,13 +97,13 @@ function fixture(t: TestContext, overrides: Partial<EnginePort> = {}) {
     actions,
     observations,
     runs,
-    setElements(value: readonly Element[]) {
+    setElements(this: void, value: readonly Element[]) {
       elements = value;
     },
   };
 }
 
-test(
+void test(
   "persistent bindings support top-level await and documentation is emitted once",
   { timeout: 5_000 },
   async (t) => {
@@ -126,7 +126,7 @@ test(
   },
 );
 
-test(
+void test(
   "getApp emits initial state and later observations report diffs or full state",
   { timeout: 5_000 },
   async (t) => {
@@ -176,7 +176,7 @@ test(
   },
 );
 
-test(
+void test(
   "direct mutations invalidate element indices until a fresh observation",
   { timeout: 5_000 },
   async (t) => {
@@ -205,7 +205,7 @@ test(
   },
 );
 
-test(
+void test(
   "screenshots emit image content and invalidate indices; combined state refreshes them",
   { timeout: 5_000 },
   async (t) => {
@@ -243,7 +243,7 @@ test(
   },
 );
 
-test(
+void test(
   "app.act and semantic setters pass exact supplied text to the Jev engine",
   { timeout: 5_000 },
   async (t) => {
@@ -286,7 +286,7 @@ test(
   },
 );
 
-test(
+void test(
   "reset discards bindings and emits guidance on the next call",
   { timeout: 5_000 },
   async (t) => {
@@ -308,7 +308,7 @@ test(
   },
 );
 
-test(
+void test(
   "an infinite loop times out, cannot execute a later action, and loses its bindings",
   { timeout: 5_000 },
   async (t) => {
@@ -336,7 +336,7 @@ test(
   },
 );
 
-test(
+void test(
   "a rejected API promise returns an error promptly and leaves the REPL usable",
   { timeout: 5_000 },
   async (t) => {
@@ -360,7 +360,7 @@ test(
   },
 );
 
-test(
+void test(
   "cancellation reaches an in-flight Jev run and clears the worker bindings",
   { timeout: 5_000 },
   async (t) => {
@@ -411,7 +411,7 @@ test(
   },
 );
 
-test(
+void test(
   "a delayed unawaited continuation cannot act during a later evaluation",
   { timeout: 5_000 },
   async (t) => {
@@ -450,7 +450,7 @@ test(
 );
 
 for (const interruption of ["cancel", "timeout"] as const) {
-  test(
+  void test(
     `typeText cannot act after ${interruption} during its fresh observation`,
     { timeout: 5_000 },
     async (t) => {
@@ -534,7 +534,7 @@ for (const interruption of ["cancel", "timeout"] as const) {
   );
 }
 
-test(
+void test(
   "a semantic field selection clears the previous numeric text target",
   { timeout: 5_000 },
   async (t) => {

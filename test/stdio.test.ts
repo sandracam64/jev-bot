@@ -3,16 +3,16 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 
-function text(result: CallToolResult): string {
-  return result.content
-    .filter((block) => block.type === "text")
+function text(result: Awaited<ReturnType<Client["callTool"]>>): string {
+  return CallToolResultSchema.parse(result)
+    .content.filter((block) => block.type === "text")
     .map((block) => block.text)
     .join("\n");
 }
 
-test(
+void test(
   "real stdio server advertises js/reset and runs persistent JavaScript without desktop or TypeSafe access",
   { timeout: 10_000 },
   async (t) => {

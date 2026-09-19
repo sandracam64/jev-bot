@@ -120,7 +120,7 @@ function fake(
   return { client, calls, closed: () => closed };
 }
 
-test("observation requests the exact window, bounded accessibility and no screenshot", async () => {
+void test("observation requests the exact window, bounded accessibility and no screenshot", async () => {
   const fixture = fake();
   const driver = await createDriver(fixture.client, session);
   const observed = await driver.observe(target, "7");
@@ -146,7 +146,7 @@ test("observation requests the exact window, bounded accessibility and no screen
   await assert.rejects(driver.observe(target), /closed/);
 });
 
-test("discovery does not leak unsupported session fields and returns bounded metadata", async () => {
+void test("discovery does not leak unsupported session fields and returns bounded metadata", async () => {
   const fixture = fake(tools(), {
     structuredContent: {
       windows: [
@@ -176,7 +176,7 @@ test("discovery does not leak unsupported session fields and returns bounded met
   assert.deepEqual(fixture.calls[0]?.arguments, {});
 });
 
-test("click uses canonical target while typing and keys use advertised native flat fields", async () => {
+void test("click uses canonical target while typing and keys use advertised native flat fields", async () => {
   const fixture = fake(tools(), {
     structuredContent: {
       effect: "confirmed",
@@ -227,7 +227,7 @@ test("click uses canonical target while typing and keys use advertised native fl
   );
 });
 
-test("refuses portable typing contract lacking snapshot token targeting before mutation", async () => {
+void test("refuses portable typing contract lacking snapshot token targeting before mutation", async () => {
   const inventory = tools().map((entry) =>
     entry.name === "type_text"
       ? tool("type_text", { ...common, target: { type: "object" }, text: str })
@@ -247,7 +247,7 @@ test("refuses portable typing contract lacking snapshot token targeting before m
   assert.equal(fixture.calls.length, 0);
 });
 
-test("refuses missing background mode and undocumented required fields without calls", async () => {
+void test("refuses missing background mode and undocumented required fields without calls", async () => {
   for (const replacement of [
     tool("click", {
       session: str,
@@ -271,7 +271,7 @@ test("refuses missing background mode and undocumented required fields without c
   }
 });
 
-test("never retries actions or exposes raw error content", async () => {
+void test("never retries actions or exposes raw error content", async () => {
   const fixture = fake();
   fixture.client.callTool = async (call) => {
     fixture.calls.push(call);
@@ -285,7 +285,7 @@ test("never retries actions or exposes raw error content", async () => {
   assert.equal(fixture.calls.length, 1);
 });
 
-test("wrong-window, unsafe IDs, duplicate tokens and malformed snapshot fields fail closed", () => {
+void test("wrong-window, unsafe IDs, duplicate tokens and malformed snapshot fields fail closed", () => {
   assert.throws(() =>
     normalizeObservation({ ...state(), window_id: 999 }, target),
   );
@@ -315,7 +315,7 @@ test("wrong-window, unsafe IDs, duplicate tokens and malformed snapshot fields f
   );
 });
 
-test("secure elements and raw tree content never reach normalized observations", () => {
+void test("secure elements and raw tree content never reach normalized observations", () => {
   const result = normalizeObservation(
     {
       ...state(),
@@ -348,7 +348,7 @@ test("secure elements and raw tree content never reach normalized observations",
   assert.doesNotMatch(JSON.stringify(result), /secret|password/i);
 });
 
-test("partial, missing-completeness and degraded observations cannot claim complete evidence", () => {
+void test("partial, missing-completeness and degraded observations cannot claim complete evidence", () => {
   for (const flags of [
     { truncated: true },
     { degraded: true },
@@ -368,7 +368,7 @@ test("partial, missing-completeness and degraded observations cannot claim compl
   );
 });
 
-test("receipts require confirmed background evidence and preserve stale refusal without raw text", () => {
+void test("receipts require confirmed background evidence and preserve stale refusal without raw text", () => {
   for (const payload of [
     { effect: "unverifiable", delivery: { mode: "background" } },
     { effect: "confirmed", delivery: { mode: "background" } },
@@ -394,7 +394,7 @@ test("receipts require confirmed background evidence and preserve stale refusal 
   );
 });
 
-test("tool discovery handles pagination and rejects repeated cursors", async () => {
+void test("tool discovery handles pagination and rejects repeated cursors", async () => {
   const fixture = fake();
   let page = 0;
   fixture.client.listTools = async (input) => {
@@ -413,7 +413,7 @@ test("tool discovery handles pagination and rejects repeated cursors", async () 
   );
 });
 
-test("app discovery preserves running identity without returning implementation metadata", async () => {
+void test("app discovery preserves running identity without returning implementation metadata", async () => {
   const fixture = fake(tools(), {
     structuredContent: {
       apps: [
@@ -457,7 +457,7 @@ test("app discovery preserves running identity without returning implementation 
   assert.deepEqual(fixture.calls[0], { name: "list_apps", arguments: {} });
 });
 
-test("screenshot requests a precise capture-only window and returns only its image", async () => {
+void test("screenshot requests a precise capture-only window and returns only its image", async () => {
   const png =
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9sAAAAASUVORK5CYII=";
   const fixture = fake(tools(), {
@@ -484,7 +484,7 @@ test("screenshot requests a precise capture-only window and returns only its ima
   });
 });
 
-test("screenshot refuses different windows and invalid or ambiguous image payloads", async () => {
+void test("screenshot refuses different windows and invalid or ambiguous image payloads", async () => {
   for (const result of [
     { structuredContent: { pid: 42, window_id: 99 }, content: [] },
     { structuredContent: { pid: 42, window_id: 12 }, content: [] },
@@ -503,7 +503,7 @@ test("screenshot refuses different windows and invalid or ambiguous image payloa
   }
 });
 
-test("set_value replaces through its exact semantic contract without typing or synthetic shortcuts", async () => {
+void test("set_value replaces through its exact semantic contract without typing or synthetic shortcuts", async () => {
   const fixture = fake(tools(), {
     structuredContent: {
       effect: "confirmed",
@@ -538,7 +538,7 @@ test("set_value replaces through its exact semantic contract without typing or s
   ]);
 });
 
-test("set_value refuses absent snapshot-token support and never falls back to insertion", async () => {
+void test("set_value refuses absent snapshot-token support and never falls back to insertion", async () => {
   const inventory = tools().map((entry) =>
     entry.name === "set_value"
       ? tool(
@@ -562,7 +562,7 @@ test("set_value refuses absent snapshot-token support and never falls back to in
   assert.equal(fixture.calls.length, 0);
 });
 
-test("set_value uses explicit background mode if the installed Driver advertises one", async () => {
+void test("set_value uses explicit background mode if the installed Driver advertises one", async () => {
   const inventory = tools().map((entry) =>
     entry.name === "set_value"
       ? tool(
@@ -594,7 +594,7 @@ test("set_value uses explicit background mode if the installed Driver advertises
   });
 });
 
-test("macOS pending permissions reports the exact setup blocker without echoing native details", async () => {
+void test("macOS pending permissions reports the exact setup blocker without echoing native details", async () => {
   const fixture = fake(tools(), {
     isError: true,
     structuredContent: { code: "tool_invocation_failed", exit_code: 75 },
@@ -613,7 +613,7 @@ test("macOS pending permissions reports the exact setup blocker without echoing 
   assert.equal(fixture.calls.length, 1);
 });
 
-test("CUA integer formats validate without ignored-format warnings and retain standard formats", () => {
+void test("CUA integer formats validate without ignored-format warnings and retain standard formats", () => {
   const validator = createDriverSchemaValidator();
   const warnings: unknown[][] = [];
   const original = console.warn;

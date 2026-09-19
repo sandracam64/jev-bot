@@ -1,9 +1,7 @@
-import { spawnSync } from "node:child_process";
-import { readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import { readdir, readFile, writeFile } from "node:fs/promises";
+import { build } from "tsdown";
+import ts from "typescript-api";
 
-const root = fileURLToPath(new URL("../", import.meta.url));
 const packageJson = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
@@ -14,18 +12,7 @@ await writeFile(
 
 if (!process.argv.includes("--metadata-only")) {
   const dist = new URL("../dist/", import.meta.url);
-  await rm(dist, { recursive: true, force: true });
-  const compiler = spawnSync(
-    process.execPath,
-    [
-      fileURLToPath(
-        new URL("../node_modules/typescript/bin/tsc", import.meta.url),
-      ),
-    ],
-    { cwd: root, stdio: "inherit" },
-  );
-  if (compiler.error) throw compiler.error;
-  if (compiler.status !== 0) process.exit(compiler.status ?? 1);
+  await build({ config: "tsdown.config.ts" });
 
   for (const file of await readdir(dist)) {
     if (!file.endsWith(".js") && !file.endsWith(".d.ts")) continue;

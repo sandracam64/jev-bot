@@ -36,7 +36,7 @@ function metadata(version = "0.1.0") {
   ];
 }
 
-test("release versions use canonical stable or rc SemVer", () => {
+void test("release versions use canonical stable or rc SemVer", () => {
   for (const value of ["0.0.0", "1.2.3", "10.20.30-rc.0", "1.0.0-rc.12"])
     assert.equal(parseVersion(value).version, value);
   for (const value of [
@@ -53,7 +53,7 @@ test("release versions use canonical stable or rc SemVer", () => {
     assert.throws(() => parseVersion(value));
 });
 
-test("release ordering handles multi-digit numbers and rc promotion", () => {
+void test("release ordering handles multi-digit numbers and rc promotion", () => {
   for (const [a, b] of [
     ["0.1.10", "0.1.9"],
     ["1.0.0-rc.10", "1.0.0-rc.9"],
@@ -66,7 +66,7 @@ test("release ordering handles multi-digit numbers and rc promotion", () => {
   assert.equal(compareVersions("0.1.0", "0.1.0"), 0);
 });
 
-test("only the matching release line is accepted", () => {
+void test("only the matching release line is accepted", () => {
   assert.equal(validateBranch("1.2.3-rc.1", "release/1.2").line, "1.2");
   for (const branch of [
     "main",
@@ -81,7 +81,7 @@ test("only the matching release line is accepted", () => {
     assert.throws(() => validateBranch("1.2.3", branch));
 });
 
-test("metadata must agree across both registries and the lockfile", () => {
+void test("metadata must agree across both registries and the lockfile", () => {
   assert.equal(validateMetadata(...metadata()), "0.1.0");
   const [pkg, lock, jsr] = metadata();
   assert.throws(() => validateMetadata({ ...pkg, private: true }, lock, jsr));
@@ -91,7 +91,7 @@ test("metadata must agree across both registries and the lockfile", () => {
   assert.throws(() => validateMetadata(pkg, lock, { ...jsr, name: "jev-bot" }));
 });
 
-test("prepare updates all versions without mutating source objects or dependencies", () => {
+void test("prepare updates all versions without mutating source objects or dependencies", () => {
   const before = metadata();
   const after = nextMetadata(...before, "0.1.1-rc.1", "release/0.1");
   assert.equal(validateMetadata(...after), "0.1.1-rc.1");
@@ -101,7 +101,7 @@ test("prepare updates all versions without mutating source objects or dependenci
   assert.throws(() => nextMetadata(...before, "0.0.9", "release/0.0"));
 });
 
-test("maintenance and rc releases cannot move a newer npm channel backwards", () => {
+void test("maintenance and rc releases cannot move a newer npm channel backwards", () => {
   assert.equal(npmTag("1.0.0"), "latest");
   assert.equal(npmTag("1.1.0-rc.1"), "next");
   assert.equal(npmTag("0.1.2", { latest: "1.0.0" }), "release-0.1");
@@ -109,7 +109,7 @@ test("maintenance and rc releases cannot move a newer npm channel backwards", ()
   assert.equal(npmTag("2.0.0", { latest: "1.0.0" }), "latest");
 });
 
-test("new releases increase within their line; partly published releases can resume", () => {
+void test("new releases increase within their line; partly published releases can resume", () => {
   assert.throws(() =>
     checkPublishedVersions("0.1.1", { versions: { "0.1.2": {} } }, null),
   );
@@ -128,7 +128,7 @@ test("new releases increase within their line; partly published releases can res
   );
 });
 
-test("an npm retry verifies identity and exact tarball integrity", () => {
+void test("an npm retry verifies identity and exact tarball integrity", () => {
   const published = {
     name: packageName,
     version: "0.1.0",
@@ -141,7 +141,7 @@ test("an npm retry verifies identity and exact tarball integrity", () => {
   assert.throws(() => verifyNpmVersion(published, "sha512-same", "0.1.1"));
 });
 
-test("the npm archive must identify the reviewed package and version", () => {
+void test("the npm archive must identify the reviewed package and version", () => {
   assert.doesNotThrow(() =>
     verifyNpmArchiveMetadata({ name: packageName, version: "0.1.0" }, "0.1.0"),
   );
@@ -181,7 +181,7 @@ function assetFixture(
   };
 }
 
-test("GitHub retry verifies present assets and uploads only the missing receipt", async () => {
+void test("GitHub retry verifies present assets and uploads only the missing receipt", async () => {
   const expected = {
     "package.tgz": Buffer.from("archive"),
     "release.json": Buffer.from("receipt"),
@@ -196,7 +196,7 @@ test("GitHub retry verifies present assets and uploads only the missing receipt"
   assert.deepEqual(fixture.uploads, ["release.json"]);
 });
 
-test("GitHub mismatch stops before uploading anything else", async () => {
+void test("GitHub mismatch stops before uploading anything else", async () => {
   const expected = {
     "package.tgz": Buffer.from("archive"),
     "release.json": Buffer.from("receipt"),
@@ -210,10 +210,10 @@ test("GitHub mismatch stops before uploading anything else", async () => {
     /differs from this release/,
   );
   assert.deepEqual(fixture.uploads, []);
-  assert.equal(fixture.stored["release.json"].toString(), "changed");
+  assert.equal(fixture.stored["release.json"]?.toString(), "changed");
 });
 
-test("a lost GitHub upload response is recovered by verifying bytes on the next run", async () => {
+void test("a lost GitHub upload response is recovered by verifying bytes on the next run", async () => {
   const expected = { "release.json": Buffer.from("receipt") };
   const fixture = assetFixture({}, expected);
   const upload = fixture.transport.upload;
@@ -229,7 +229,7 @@ test("a lost GitHub upload response is recovered by verifying bytes on the next 
   assert.deepEqual(fixture.uploads, ["release.json"]);
 });
 
-test("GitHub upload success still requires a byte-for-byte readback", async () => {
+void test("GitHub upload success still requires a byte-for-byte readback", async () => {
   const expected = { "release.json": Buffer.from("receipt") };
   const fixture = assetFixture({}, expected);
   fixture.transport.upload = async (name) => {
@@ -241,7 +241,7 @@ test("GitHub upload success still requires a byte-for-byte readback", async () =
   );
 });
 
-test("a JSR retry verifies every filename, byte count, hash, and export", () => {
+void test("a JSR retry verifies every filename, byte count, hash, and export", () => {
   const manifest = { "/dist/index.js": { size: 4, checksum: "sha256-same" } };
   const exports = { ".": "./dist/index.js" };
   assert.doesNotThrow(() =>
@@ -281,7 +281,7 @@ test("a JSR retry verifies every filename, byte count, hash, and export", () => 
   );
 });
 
-test("the staged JSR manifest hashes actual bytes recursively", async () => {
+void test("the staged JSR manifest hashes actual bytes recursively", async () => {
   const path = await mkdtemp(join(tmpdir(), "jev-bot-release-"));
   try {
     await mkdir(join(path, "dist"));
@@ -299,7 +299,7 @@ test("the staged JSR manifest hashes actual bytes recursively", async () => {
   }
 });
 
-test("registry absence requires 404, while outages and bad replies stop publishing", async () => {
+void test("registry absence requires 404, while outages and bad replies stop publishing", async () => {
   assert.equal(
     await registryJson(
       "https://example.test",
@@ -326,7 +326,7 @@ test("registry absence requires 404, while outages and bad replies stop publishi
   );
 });
 
-test("release CLI checks a real branch and prepares only reviewable metadata changes", async () => {
+void test("release CLI checks a real branch and prepares only reviewable metadata changes", async () => {
   const directory = await mkdtemp(join(tmpdir(), "jev-bot-release-cli-"));
   const env = { ...process.env };
   for (const name of Object.keys(env))
@@ -371,7 +371,11 @@ test("release CLI checks a real branch and prepares only reviewable metadata cha
     assert.equal(prepared.status, 0, prepared.stderr);
     for (const name of names)
       assert.equal(
-        JSON.parse(await readFile(join(directory, name), "utf8")).version,
+        (
+          JSON.parse(await readFile(join(directory, name), "utf8")) as {
+            version: string;
+          }
+        ).version,
         "0.1.1-rc.1",
       );
     assert.match(release("prepare", "0.1.1").stderr, /Commit or set aside/);

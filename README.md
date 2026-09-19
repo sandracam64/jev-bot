@@ -380,7 +380,8 @@ sandbox for untrusted code.
 
 ### Build from source
 
-From the repository directory:
+Use Node 22.18+, 24.11+, or 26+ for development. The published runtime supports
+Node 22+. From the repository directory:
 
 ```sh
 npm ci
@@ -393,12 +394,42 @@ codex mcp add jev-bot -- "$(command -v node)" "$PWD/dist/cli.js"
 Add `TYPESAFE_API_KEY` to `.env` before using Jev. The build generates the server
 version from `package.json`; do not edit `src/version.ts` or `dist`.
 
+tsdown builds the JavaScript and declarations. TypeScript 7 uses Effect's TSGo
+patch for typechecking; `npm ci` applies that patch and the matching Oxlint patch
+through the `prepare` script. Keep TypeScript, `@effect/tsgo`, Oxlint, and
+`oxlint-tsgolint` at compatible versions when upgrading.
+
+The older `typescript-api` development alias supplies the syntax-tree API used
+to prepare JSR imports. It does not compile the project.
+
+[ts-reset](https://www.totaltypescript.com/ts-reset) applies only during development
+through `types/ts-reset.d.ts`. It is
+excluded from both packages and never changes a consumer's global types.
+
+Oxlint uses [Effect's correctness preset](https://github.com/Effect-TS/tsgo/blob/main/docs/README.md)
+with type-aware checks. CI runs the same format, lint, and type checks before
+testing or publishing.
+
+### Editor setup
+
+In Zed, enable the **Effect Language Service (tsgo)** and **Oxc** extensions.
+The workspace selects Effect's TSGo server, Oxlint diagnostics, and Oxfmt on save.
+In VS Code, install the workspace's recommended **TypeScript Native Preview**
+and **Oxc** extensions and use the workspace TypeScript version.
+
+Effect diagnostics come from Oxlint; the language service keeps completions,
+navigation, and fixes without reporting those diagnostics twice. Restart the
+language servers after installing or upgrading dependencies.
+
 ### Offline checks
 
 ```sh
-npm run typecheck
-npm test
+npm run check
 ```
+
+`check` runs formatting, type-aware linting, typechecking, and offline tests.
+Use `npm run format` to format files and `npm run lint:fix` for safe lint fixes.
+Each check also has its own command: `format:check`, `lint`, `typecheck`, and `test`.
 
 Tests rebuild the package and check the SDK contract, MCP transport, persistent
 JavaScript, native driver adapter, stale state, and cancellation. They do not

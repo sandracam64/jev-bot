@@ -213,7 +213,7 @@ export class ComputerRepl {
           active.calls.add(task);
           void task.finally(() => active.calls.delete(task));
         } else if (message.type === "done") {
-          void Promise.allSettled([...active.calls]).then(() => {
+          void Promise.allSettled(active.calls).then(() => {
             if (message.value && !active.outputs.length)
               active.outputs.push({ type: "text", text: message.value });
             finish(message.error);

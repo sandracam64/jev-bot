@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/@effect/tsgo/oxlint-schema.json",
+  "extends": ["./node_modules/@effect/tsgo/oxlint-presets/correctness.json"],
+  "plugins": ["typescript", "unicorn", "oxc", "effecttsgo"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-imports": "error"
+  },
+  "ignorePatterns": ["dist/**", ".release/**", ".local/**", "src/version.ts"]
+}

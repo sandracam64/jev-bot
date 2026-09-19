@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { TypeSafeClient } from "@typesafe-ai/sdk";
+import { z } from "zod";
 import { createChooser } from "../src/provider.js";
 import type { Observation } from "../src/types.js";
 
@@ -27,12 +28,20 @@ const candidates = [
   { id: "done", description: "Finished" },
 ];
 
-test("official SDK sends one bounded Choice and redacts secure values", async () => {
-  const requests: Record<string, any>[] = [];
+void test("official SDK sends one bounded Choice and redacts secure values", async () => {
+  const requestSchema = z
+    .object({
+      questions: z.object({
+        next_action: z.object({ criteria: z.record(z.string()) }),
+      }),
+    })
+    .passthrough();
+  const requests: z.infer<typeof requestSchema>[] = [];
   const client = new TypeSafeClient({
     apiKey: "fixture-key",
     fetch: async (_url, init) => {
-      requests.push(JSON.parse(String(init?.body)));
+      assert.ok(typeof init?.body === "string");
+      requests.push(requestSchema.parse(JSON.parse(init.body)));
       return Response.json({
         model: "fixture",
         usage: { input_tokens: 1, output_tokens: 1 },
@@ -55,7 +64,8 @@ test("official SDK sends one bounded Choice and redacts secure values", async ()
   );
   assert.equal(result.selectedId, "handoff");
   assert.equal(requests.length, 1);
-  assert.deepEqual(Object.keys(requests[0]?.questions.next_action.criteria), [
+  assert.ok(requests[0]);
+  assert.deepEqual(Object.keys(requests[0].questions.next_action.criteria), [
     "handoff",
     "done",
   ]);
@@ -63,7 +73,7 @@ test("official SDK sends one bounded Choice and redacts secure values", async ()
   assert.ok(!JSON.stringify(requests).includes("s1:1"));
 });
 
-test("malformed model choices never escape the provider", async () => {
+void test("malformed model choices never escape the provider", async () => {
   for (const answer of [
     {
       choice: "invented",
@@ -87,7 +97,7 @@ test("malformed model choices never escape the provider", async () => {
   }
 });
 
-test("provider errors are not retried", async () => {
+void test("provider errors are not retried", async () => {
   let calls = 0;
   const client = new TypeSafeClient({
     apiKey: "fixture-key",
@@ -102,7 +112,7 @@ test("provider errors are not retried", async () => {
   assert.equal(calls, 1);
 });
 
-test("cancelled inference performs no mutation or retry", async () => {
+void test("cancelled inference performs no mutation or retry", async () => {
   const client = new TypeSafeClient({
     apiKey: "fixture-key",
     fetch: async () => {

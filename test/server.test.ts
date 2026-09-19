@@ -33,7 +33,7 @@ async function connect(
   return client;
 }
 
-test("publishes only js and reset with strict schemas and conservative action annotations", async (t) => {
+void test("publishes only js and reset with strict schemas and conservative action annotations", async (t) => {
   const client = await connect(t, stubRuntime());
   const { tools } = await client.listTools();
   assert.deepEqual(
@@ -56,7 +56,7 @@ test("publishes only js and reset with strict schemas and conservative action an
   assert.match(guidance, /DONE is not verified success/);
 });
 
-test("dispatches exact JavaScript, timeout, and cancellation signal and preserves rich output", async (t) => {
+void test("dispatches exact JavaScript, timeout, and cancellation signal and preserves rich output", async (t) => {
   const emitted: CallToolResult = {
     content: [
       { type: "text", text: "Window observation." },
@@ -96,7 +96,7 @@ test("dispatches exact JavaScript, timeout, and cancellation signal and preserve
   assert.equal(calls[1]?.timeoutMs, 30_000);
 });
 
-test("rejects invalid and unknown arguments before executing JavaScript", async (t) => {
+void test("rejects invalid and unknown arguments before executing JavaScript", async (t) => {
   let calls = 0;
   const client = await connect(
     t,
@@ -132,7 +132,7 @@ test("rejects invalid and unknown arguments before executing JavaScript", async 
   assert.equal(calls, 0);
 });
 
-test("delegates reset to the same persistent runtime without executing code", async (t) => {
+void test("delegates reset to the same persistent runtime without executing code", async (t) => {
   let resets = 0;
   const client = await connect(
     t,
@@ -151,7 +151,7 @@ test("delegates reset to the same persistent runtime without executing code", as
   assert.notEqual(response.isError, true);
 });
 
-test("passes runtime handoff and error outcomes through without relabeling success", async (t) => {
+void test("passes runtime handoff and error outcomes through without relabeling success", async (t) => {
   let outcome: CallToolResult = {
     content: [{ type: "text", text: "Visual fallback required." }],
     structuredContent: { status: "handoff" },
@@ -170,7 +170,7 @@ test("passes runtime handoff and error outcomes through without relabeling succe
   }
 });
 
-test("does not leak underlying runtime exception details", async (t) => {
+void test("does not leak underlying runtime exception details", async (t) => {
   const fail = async (): Promise<never> => {
     throw new Error("secret-api-key and private response body");
   };
@@ -188,7 +188,7 @@ test("does not leak underlying runtime exception details", async (t) => {
   }
 });
 
-test("cancels an in-flight execution through the MCP request signal", async (t) => {
+void test("cancels an in-flight execution through the MCP request signal", async (t) => {
   let markStarted: () => void = () => {};
   let markAborted: () => void = () => {};
   const started = new Promise<void>((resolve) => {

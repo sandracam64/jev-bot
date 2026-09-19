@@ -27,7 +27,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            node: "22.0.0"
+            node: "22.18.0"
           - os: macos-15
             node: "24.21.0"
     steps:
@@ -47,6 +47,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
       - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - run: npm run package:check
@@ -78,6 +80,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
       - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
       - run: npm run typecheck
       - run: npm test
       - name: Build and verify both packages from this commit

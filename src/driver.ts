@@ -11,7 +11,6 @@ import type {
   Driver,
   Element,
   JsonObject,
-  NativeAction,
   Observation,
   Target,
 } from "./types.js";

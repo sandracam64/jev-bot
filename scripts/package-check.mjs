@@ -12,7 +12,7 @@ import {
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import ts from "typescript-api";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const npm = process.platform === "win32" ? "npm.cmd" : "npm";
@@ -211,7 +211,16 @@ try {
   const consumer = join(temporary, "consumer.mts");
   await writeFile(
     consumer,
-    `import { createSession, createServer, type ComputerSession } from "@compootor/jev-bot";\nconst session: ComputerSession = createSession();\nconst server = createServer(session);\nconst result = session.execute("await nodeRepl.write(42)");\nvoid server;\nvoid result;\n`,
+    `import { createSession, createServer, type ComputerSession } from "@compootor/jev-bot";
+const session: ComputerSession = createSession();
+const server = createServer(session);
+const result = session.execute("await nodeRepl.write(42)");
+// Importing the package must not opt consumers into ts-reset's global changes.
+const consumerJson: string = JSON.parse('"value"');
+void server;
+void result;
+void consumerJson;
+`,
   );
   run(
     process.execPath,

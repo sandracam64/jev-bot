@@ -6,9 +6,24 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": "src",
-    "declaration": true
+    "declaration": true,
+    "noEmit": true,
+    "types": ["node"],
+    "plugins": [
+      {
+        "name": "@effect/language-service",
+        "diagnostics": false
+      }
+    ],
+    "allowJs": true,
+    "rootDirs": ["src", "dist"]
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "types/**/*.d.ts",
+    "test/**/*.ts",
+    "scripts/live-smoke.ts",
+    "tsdown.config.ts"
+  ],
+  "$schema": "./node_modules/@effect/tsgo/schema.json"
 }
