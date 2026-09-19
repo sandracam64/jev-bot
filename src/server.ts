@@ -3,12 +3,26 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 import { PACKAGE_NAME, PACKAGE_VERSION } from "./version.js";
 
+/** Persistent JavaScript operations required by the MCP server. */
 export interface ReplRuntimePort {
+  /**
+   * Run JavaScript and return MCP text or image content.
+   * Sessions created by `createSession` keep bindings between calls and accept
+   * only one active call. Inspect the returned `isError` flag before continuing.
+   *
+   * @param code Nonblank JavaScript, up to 50,000 characters in the default runtime.
+   * @param signal Cancels execution. Native input already sent may have occurred.
+   * @param timeoutMs Execution deadline in milliseconds. Defaults to 30,000.
+   */
   execute(
     code: string,
     signal?: AbortSignal,
     timeoutMs?: number,
   ): Promise<CallToolResult>;
+  /**
+   * Clear JavaScript bindings and selected apps without undoing native input.
+   * Wait for active execution to finish or cancel it before resetting.
+   */
   reset(): Promise<void>;
 }
 
@@ -24,6 +38,14 @@ function failure(message: string): CallToolResult {
   return { content: [{ type: "text", text: message }], isError: true };
 }
 
+/**
+ * Create an MCP server with `js` and `reset` tools backed by a runtime.
+ * Connect the returned server to your MCP transport. The caller owns the
+ * runtime's lifetime and must close its session when finished.
+ *
+ * @param runtime Persistent JavaScript runtime, usually from `createSession`.
+ * @returns An MCP server that has not yet connected to a transport.
+ */
 export function createServer(runtime: ReplRuntimePort): McpServer {
   const server = new McpServer(
     { name: PACKAGE_NAME, version: PACKAGE_VERSION },

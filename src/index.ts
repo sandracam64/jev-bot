@@ -1,5 +1,5 @@
 /**
- * Persistent computer-use sessions for Node.js and native macOS apps.
+ * Persistent computer-use sessions for native macOS apps, running in Node.js or Bun.
  * Importing this module starts no server, native driver, or model request.
  * @module
  */

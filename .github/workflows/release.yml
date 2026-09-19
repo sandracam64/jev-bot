@@ -53,6 +53,14 @@ jobs:
       - run: npm test
       - run: npm run package:check
       - run: npm run jsr:check
+      - name: Install the supported Bun runtime
+        if: matrix.os == 'macos-15'
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: "1.4.2"
+      - name: Test the built package on Bun
+        if: matrix.os == 'macos-15'
+        run: bun --no-env-file test test/*.test.ts
 
   publish:
     needs: verify

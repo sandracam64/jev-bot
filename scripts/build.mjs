@@ -18,6 +18,17 @@ if (!process.argv.includes("--metadata-only")) {
     if (!file.endsWith(".js") && !file.endsWith(".d.ts")) continue;
     const location = new URL(file, dist);
     let text = await readFile(location, "utf8");
+    // Declaration emit can drop module docs from entrypoints with no exports.
+    if (file.endsWith(".d.ts") && !text.includes("@module")) {
+      const original = await readFile(
+        new URL(`../src/${file.slice(0, -5)}.ts`, import.meta.url),
+        "utf8",
+      );
+      const moduleDoc = original.match(
+        /^(?:#![^\n]*\n)?(\/\*\*[\s\S]*?\*\/)/,
+      )?.[1];
+      if (moduleDoc?.includes("@module")) text = `${moduleDoc}\n${text}`;
+    }
     const source = ts.createSourceFile(
       file,
       text,

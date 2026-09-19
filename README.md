@@ -4,8 +4,8 @@ Control native Mac apps from Codex or ChatGPT desktop through JavaScript that
 remembers its variables between calls. Use element numbers for exact actions,
 or let TypeSafe Jev choose a control from a description.
 
-Package name: **`@compootor/jev-bot`** on npm and JSR. Both builds run in Node.js;
-native desktop control requires macOS.
+Package name: **`@compootor/jev-bot`** on npm and JSR. Both builds run in
+Node.js 22+ or Bun 1.4.2+. Native desktop control requires macOS.
 
 [Quick start](#quick-start) · [Usage](#usage) · [API reference](#api-reference) ·
 [Configuration](#configuration) · [Troubleshooting](#troubleshooting) ·
@@ -176,7 +176,7 @@ in sequence.** Discovery, observations, and actions display their own output;
 do not wrap them in `nodeRepl.write` or `nodeRepl.emitImage`.
 In the signatures below, `?` means optional.
 
-### Embed in a Node application
+### Embed in a Node or Bun application
 
 Install from either registry in a project that uses `"type": "module"`:
 
@@ -213,10 +213,12 @@ shortcut. To start its MCP server from the consuming project:
 
 ```sh
 node --input-type=module -e "await import('@compootor/jev-bot/cli')"
+# Or run it with Bun:
+bun -e "await import('@compootor/jev-bot/cli')"
 ```
 
-This remains a Node package; installing it from JSR does not add Deno or browser
-runtime support.
+Deno and browsers are not supported. Installing from JSR does not change the
+runtime requirements or replace the native Mac driver.
 
 ### MCP tools
 
@@ -381,7 +383,7 @@ sandbox for untrusted code.
 ### Build from source
 
 Use Node 22.18+, 24.11+, or 26+ for development. The published runtime supports
-Node 22+. From the repository directory:
+Node 22+ and Bun 1.4.2+. From the repository directory:
 
 ```sh
 npm ci
@@ -472,7 +474,8 @@ the command skips without opening an app or calling TypeSafe.
 <summary>Validation recorded on 2026-09-19</summary>
 
 - Typecheck, build, and all 118 offline tests passed, including Node 22 and a real MCP stdio connection.
-- The npm archive passed a clean-install check. The JSR package passed its publication dry run. Release branch, version, and interrupted-upload checks passed locally; hosted publishing remains untested.
+- Bun 1.4.2 passed all eight test files, including persistent JavaScript, cancellation, and the MCP stdio connection. CI repeats these checks on macOS before publishing.
+- The npm archive passed a clean-install check. The JSR package passed its publication dry run. Version `0.1.0` was published through GitHub Actions to both registries, with its archives and file manifest verified.
 - Cua Driver 0.28.2 was installed with its published checksum and app signature verified.
 - One live `jev-1.13.0` request on synthetic window data selected the expected action. No desktop performance benchmark has been run.
 - The smoke runner passed TypeScript checking; its Swift fixture passed compiler typechecking.

@@ -1,4 +1,13 @@
 #!/usr/bin/env node
+/**
+ * Start the local MCP server over standard input and output, or check the native
+ * Cua Driver connection with `jev-bot doctor`.
+ *
+ * Run `jev-bot --help` for commands and environment-file options. This entrypoint
+ * runs the CLI when imported; use the package root to create a session in code.
+ *
+ * @module
+ */
 import process from "node:process";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
