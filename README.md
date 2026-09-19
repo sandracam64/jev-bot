@@ -220,6 +220,10 @@ bun -e "await import('@compootor/jev-bot/cli')"
 Deno and browsers are not supported. Installing from JSR does not change the
 runtime requirements or replace the native Mac driver.
 
+Jev requests use [Effective Jev](https://github.com/stoopid-computers/effective-jev)
+and Effect internally. The package configures Effect for you. The session API
+still returns promises and uses the same API key and model settings.
+
 ### MCP tools
 
 | Tool    | Input                           | Behavior                                                                                   |
@@ -358,6 +362,9 @@ environment files. Restart the MCP connection after configuration changes or reb
 | `TYPESAFE_DEFAULT_MODEL` | `jev-1.13.0`                                   | TypeSafe model used for decisions.              |
 | `CUA_DRIVER_BIN`         | Installed Mac app, then `cua-driver` on `PATH` | Absolute path to a different driver executable. |
 
+Each Jev request has an eight-second timeout and no automatic retries. Cancelling
+the call aborts its active request.
+
 Jev requests send the selected window's accessibility text, your goal, available
 action descriptions, and recent decisions to TypeSafe. Text you enter can appear
 in later accessibility reads. Screenshots go to your agent, not Jev. Recognized
@@ -473,11 +480,11 @@ the command skips without opening an app or calling TypeSafe.
 <details>
 <summary>Validation recorded on 2026-09-19</summary>
 
-- Typecheck, build, and all 118 offline tests passed, including Node 22 and a real MCP stdio connection.
+- Typecheck, build, and all 120 offline tests passed, including a real MCP stdio connection. CI also checks Node 22.
 - Bun 1.4.2 passed all eight test files, including persistent JavaScript, cancellation, and the MCP stdio connection. CI repeats these checks on macOS before publishing.
 - The npm archive passed a clean-install check. The JSR package passed its publication dry run. Version `0.1.0` was published through GitHub Actions to both registries, with its archives and file manifest verified.
 - Cua Driver 0.28.2 was installed with its published checksum and app signature verified.
-- One live `jev-1.13.0` request on synthetic window data selected the expected action. No desktop performance benchmark has been run.
+- One live `jev-1.13.0` request through Effective Jev selected the expected action from synthetic window data. It performed no desktop input. No desktop performance benchmark has been run.
 - The smoke runner passed TypeScript checking; its Swift fixture passed compiler typechecking.
 - The native smoke attempt stopped at the macOS permission check. Real typing, clicking, screenshots, and invocation from ChatGPT remain unverified.
 
@@ -581,8 +588,10 @@ References: [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/)
 jev-bot builds on **Cua Driver by Cua AI** for native desktop observation and
 input. Its action selection draws on [CUA's Jev example](https://github.com/trycua/cua/tree/bdaf8c2570e35254f5e50a317781374efe7aa91a/libs/cua-driver/examples/jev-use)
 and [jev-ultrafast by Browser Use](https://github.com/browser-use/jev-ultrafast).
-The [TypeSafe JavaScript SDK](https://github.com/typesafe-ai/typesafe-sdk-js)
-provides the Jev client.
+[Effective Jev](https://github.com/stoopid-computers/effective-jev) provides the
+runtime Jev client. It is an independent Effect-based fork of the
+[TypeSafe JavaScript SDK](https://github.com/typesafe-ai/typesafe-sdk-js),
+originally authored by [evinism](https://github.com/evinism).
 
 This is an independent integration. [Cua Driver](https://github.com/trycua/cua/tree/main/libs/cua-driver)
 is installed separately. jev-bot's code is [MIT licensed](LICENSE); upstream

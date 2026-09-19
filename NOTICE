@@ -57,10 +57,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+Effective Jev
+https://github.com/stoopid-computers/effective-jev
+
+The @compootor/effective-jev runtime dependency provides the Jev API client through Effect. It is an independent fork of the TypeSafe JavaScript SDK and retains the upstream TypeSafe copyright notice and MIT license reproduced below.
+
 TypeSafe JavaScript SDK
 https://github.com/typesafe-ai/typesafe-sdk-js
 
-The @typesafe-ai/sdk runtime dependency provides the Jev API client.
+The original TypeSafe JavaScript SDK, authored by evinism and published as @typesafe-ai/sdk, is the upstream source of Effective Jev. Earlier jev-bot releases used that SDK directly.
 
 MIT License
 

@@ -1,4 +1,10 @@
-import { choice, TypeSafeClient } from "@typesafe-ai/sdk";
+import {
+  choice,
+  TypeSafeClient,
+  type TypeSafeClientService,
+} from "@compootor/effective-jev";
+import { Effect, References } from "effect";
+import { FetchHttpClient } from "effect/unstable/http";
 import { z } from "zod";
 import type { Choose, Decision } from "./types.js";
 
@@ -8,9 +14,12 @@ const answerSchema = z.object({
   confidence: z.number().finite().min(0).max(1),
   probabilities: z.record(z.number().finite().min(0).max(1)),
 });
+const responseSchema = z.object({
+  answers: z.object({ next_action: answerSchema }),
+});
 
 export function createChooser(
-  client?: Pick<TypeSafeClient, "systemOne">,
+  client?: Pick<TypeSafeClientService, "systemOneWithResponse">,
 ): Choose {
   let activeClient = client;
   return async (
@@ -20,6 +29,7 @@ export function createChooser(
     history,
     signal,
   ): Promise<Decision> => {
+    signal?.throwIfAborted();
     if (candidates.length < 2 || candidates.length > 255) {
       throw new Error("Jev requires between 2 and 255 candidates.");
     }
@@ -35,12 +45,14 @@ export function createChooser(
           "Set TYPESAFE_API_KEY in the server environment or its --env-file before using Jev.",
         );
       }
-      activeClient = new TypeSafeClient({
-        defaultModel: process.env.TYPESAFE_DEFAULT_MODEL || "jev-1.13.0",
-        timeout: 8_000,
-        retry: { maxRetries: 0 },
-        logLevel: "off",
-      });
+      activeClient = await Effect.runPromise(
+        TypeSafeClient.make({
+          defaultModel: process.env.TYPESAFE_DEFAULT_MODEL || "jev-1.13.0",
+          timeout: 8_000,
+          retry: { maxRetries: 0 },
+        }).pipe(Effect.provide(FetchHttpClient.layer)),
+        { signal },
+      );
     }
     // UI content is evidence. It must never become instructions or executable arguments.
     const state = {
@@ -63,7 +75,7 @@ export function createChooser(
         "Window state exceeds the Jev request budget. Narrow the observation with query.",
       );
     }
-    const response = await activeClient.systemOne(
+    const request = activeClient.systemOneWithResponse(
       {
         state,
         questions: {
@@ -78,9 +90,20 @@ export function createChooser(
           ),
         },
       },
-      { signal, timeout: 8_000, retry: { maxRetries: 0 } },
+      { timeout: 8_000, retry: { maxRetries: 0 } },
     );
-    const answer = answerSchema.parse(response.answers?.next_action);
+    signal?.throwIfAborted();
+    const { data, body } = await Effect.runPromise(
+      request.pipe(
+        Effect.flatMap(({ data, response }) =>
+          Effect.map(response.json, (body) => ({ data, body })),
+        ),
+        Effect.provideService(References.MinimumLogLevel, "None"),
+      ),
+      { signal },
+    );
+    // Validate the original probabilities: SDK decoding can strip unknown keys.
+    const answer = responseSchema.parse(body).answers.next_action;
     if (!Object.hasOwn(criteria, answer.choice)) {
       throw new Error(
         "Jev returned an action outside the current candidate table.",
@@ -104,7 +127,7 @@ export function createChooser(
       selectedId: answer.choice,
       confidence: answer.confidence,
       probabilities: Object.freeze({ ...answer.probabilities }),
-      ...(typeof response.model === "string" ? { model: response.model } : {}),
+      model: data.model,
     });
   };
 }
