@@ -92,6 +92,8 @@ jobs:
         env:
           RELEASE_VERSION: ${{ inputs.version }}
           GH_TOKEN: ${{ github.token }}
+          # Optional first-publication token. Remove the secret after npm trust is configured.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Keep packages and verification receipt
         if: always()
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0

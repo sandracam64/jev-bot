@@ -535,22 +535,39 @@ npm archive and a receipt recording the source commit and registry checksums.
    On JSR, create `@compootor/jev-bot` and link it to
    `stoopid-computers/jev-bot` in the package settings.
 4. npm requires an existing package before configuring trusted publishing. For
-   the first version, dispatch the workflow from `release/0.1`. Its npm publish
-   step will need the one-time setup; download the verified tarball from that
-   run's artifact. Publish that exact file interactively with an authorized npm
-   account, using `npm publish /path/to/compootor-jev-bot-0.1.0.tgz --access public --ignore-scripts`.
-   Complete npm's authentication prompt yourself.
-5. In npm's trusted publisher settings, enter organization `stoopid-computers`,
+   the first version, create a short-lived granular npm token. Under **Packages
+   and scopes**, grant **Read and write (publish and stage)** to `@compootor` and
+   enable **Bypass two-factor authentication** for unattended publishing. Leave
+   organization-management access at **No access**. Save the token yourself as
+   `NPM_TOKEN` in GitHub's `publish` environment. Do not put it in chat or `.env`.
+5. Dispatch **Release** from `release/0.1` with version `0.1.0`. The workflow
+   makes the token available only to the publication step, after its checks pass.
+   JSR uses GitHub OIDC and needs no token.
+6. After npm publishes the first version, open its trusted publisher settings.
+   Enter organization `stoopid-computers`,
    repository `jev-bot`, workflow filename `release.yml`, and environment `publish`.
-   Allow direct publishing. Rerun the same workflow run; it verifies the existing
-   npm bytes, publishes JSR, and completes the GitHub release.
+   Allow direct publishing. Remove `NPM_TOKEN` from the GitHub environment and
+   revoke the temporary token on npm. If the workflow stopped after npm
+   succeeded, rerun the same workflow run to finish JSR and the GitHub release.
+
+Without a bootstrap token, the first workflow run stops at npm authentication
+and retains its verified tarball as an artifact. Download that exact file and
+publish it interactively with an authorized npm account:
+
+```sh
+npm publish /path/to/compootor-jev-bot-0.1.0.tgz --access public --ignore-scripts
+```
+
+Then configure trusted publishing as above and rerun the same workflow run.
 
 Later releases use short-lived GitHub OIDC credentials. No long-lived npm or JSR
-publish token is needed in repository secrets. The native driver and TypeSafe key
-are also unnecessary for the release checks.
+publish token is needed. A successful new-version release without `NPM_TOKEN`
+verifies npm trusted publishing; rerunning an existing version does not. The
+native driver and TypeSafe key are also unnecessary for the release checks.
 
 References: [npm trusted publishing](https://docs.npmjs.com/trusted-publishers/),
 [npm first-publish prerequisite](https://docs.npmjs.com/cli/v11/commands/npm-trust/),
+[npm token permissions](https://docs.npmjs.com/creating-and-viewing-access-tokens/),
 [JSR GitHub publishing](https://jsr.io/docs/publishing-packages), and
 [GitHub manual workflow requirements](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch).
 
